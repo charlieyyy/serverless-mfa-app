@@ -22,33 +22,21 @@ export default function Profile() {
     console.log(accessToken);
 
     getMFAsettings();
-  }, [])
+  }, []);
 
-  async function getUser(event) {
-    event.preventDefault();
-
-    setIsLoading(true);
-
+  async function getUser() {
     try {
-      await Auth.currentAuthenticatedUser().then(user => setUser(user));
-      userHasAuthenticated(true);
+      Auth.currentAuthenticatedUser().then(user => setUser(user));
     } catch (e) {
       onError(e);
-      setIsLoading(false);
     }
   }
 
-  async function getToken(event) {
-    event.preventDefault();
-
-    setIsLoading(true);
-
+  async function getToken() {
     try {
-      await Auth.signIn(fields.email, fields.password);
-      userHasAuthenticated(true);
+      Auth.currentSession().then(res => setAccessToken(res.getAccessToken().getJwtToken()));
     } catch (e) {
       onError(e);
-      setIsLoading(false);
     }
   }
 
@@ -96,11 +84,6 @@ export default function Profile() {
         Auth.setPreferredMFA(user, 'TOTP');
       });
       setEnabled(true)
-      const settings = {
-        PreferredMfa: true,
-        Enabled: true,
-      }
-      user.setUserMfaPreference(null, settings, () => {})
     } catch (e) {
       onError(e);
     }
