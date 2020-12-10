@@ -1,61 +1,31 @@
 import React, { useState, useEffect }from "react";
 import { Auth } from "aws-amplify";
 import "./Home.css";
-import AWS from 'aws-sdk'
 import { onError } from "../libs/errorLib";
 import QRCode from 'qrcode.react';
 
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
   const [userCode, setUserCode] = useState('');
-  const [accessToken, setAccessToken] = useState('');
   const [qrCode, setQrcode] = useState(null);
   const [enabled, setEnabled] = useState(false);
-  const cognito = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
 
   useEffect(() => {
-    getUser();
-    getToken();
     getMFAsettings();
   }, []);
 
-  async function getUser() {
-    const user = await Auth.currentAuthenticatedUser();
-    console.log(user);
-    setUser(user);
-  }
-
-  async function getToken() {
-    const res = await Auth.currentSession();
-    console.log(res);
-    setAccessToken(res.getAccessToken().getJwtToken());
-  }
-
-
   async function getMFAsettings() {
-    const mfaEnabled = await new Promise((resolve) => {
-      cognito.getUser(
-        {
-          AccessToken: accessToken,
-        },
-        (err, data) => {
-          if (err) resolve(false)
-          else
-            resolve(
-              data.UserMFASettingList &&
-                data.UserMFASettingList.includes('SOFTWARE_TOKEN_MFA')
-            )
-        }
-      )
-    })
-    setEnabled(mfaEnabled);
-    console.log(mfaEnabled);
-    console.log(enabled);
+    const user = await Auth.currentAuthenticatedUser();
+    console.log(user.preferredMFA);
+    if (user.preferredMFA === 'SMS_MFA' || user.preferredMFA === 'SOFTWARE_TOKEN_MFA') {
+      setEnabled(true);
+      console.log(enabled);
+    }
   }
 
   const getQRCode = (event) => {
     event.preventDefault()
+    const user = Auth.currentAuthenticatedUser();
     try {
       Auth.setupTOTP(user).then((code) => {
         const authCode = "otpauth://totp/AWSCognito:"+ user.username + "?secret=" + code + "&issuer=AWSCognito";
@@ -70,7 +40,7 @@ export default function Profile() {
     event.preventDefault();
 
     console.log('USER CODE:', userCode);
-
+    const user = Auth.currentAuthenticatedUser();
     try {
       Auth.verifyTotpToken(user, userCode).then(() => {
         Auth.setPreferredMFA(user, 'TOTP');
