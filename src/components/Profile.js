@@ -17,27 +17,19 @@ export default function Profile() {
   useEffect(() => {
     getUser();
     getToken();
-
-    console.log(user);
-    console.log(accessToken);
-
     getMFAsettings();
   }, []);
 
   async function getUser() {
-    try {
-      Auth.currentAuthenticatedUser().then(user => setUser(user));
-    } catch (e) {
-      onError(e);
-    }
+    const user = await Auth.currentAuthenticatedUser();
+    console.log(user);
+    setUser(user);
   }
 
   async function getToken() {
-    try {
-      Auth.currentSession().then(res => setAccessToken(res.getAccessToken().getJwtToken()));
-    } catch (e) {
-      onError(e);
-    }
+    const res = await Auth.currentSession();
+    console.log(res);
+    setAccessToken(res.getAccessToken().getJwtToken());
   }
 
 
