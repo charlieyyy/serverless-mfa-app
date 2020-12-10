@@ -7,6 +7,7 @@ import QRCode from 'qrcode.react';
 
 export default function Profile() {
   const [userCode, setUserCode] = useState('');
+  const [user, setUser] = useState(null);
   const [qrCode, setQrcode] = useState(null);
   const [enabled, setEnabled] = useState(false);
 
@@ -16,7 +17,9 @@ export default function Profile() {
 
   async function getMFAsettings() {
     const user = await Auth.currentAuthenticatedUser();
+    setUser(user);
     console.log(user.preferredMFA);
+    console.log(user);
     if (user.preferredMFA === 'SMS_MFA' || user.preferredMFA === 'SOFTWARE_TOKEN_MFA') {
       setEnabled(true);
       console.log(enabled);
@@ -25,7 +28,7 @@ export default function Profile() {
 
   const getQRCode = (event) => {
     event.preventDefault()
-    const user = Auth.currentAuthenticatedUser();
+    console.log(user);
     try {
       Auth.setupTOTP(user).then((code) => {
         const authCode = "otpauth://totp/AWSCognito:"+ user.username + "?secret=" + code + "&issuer=AWSCognito";
@@ -40,7 +43,8 @@ export default function Profile() {
     event.preventDefault();
 
     console.log('USER CODE:', userCode);
-    const user = Auth.currentAuthenticatedUser();
+    console.log(user);
+
     try {
       Auth.verifyTotpToken(user, userCode).then(() => {
         Auth.setPreferredMFA(user, 'TOTP');
