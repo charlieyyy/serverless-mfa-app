@@ -1,9 +1,8 @@
 import React, { useState, useEffect }from "react";
 import { Auth } from "aws-amplify";
-import "./Home.css";
 import { onError } from "../libs/errorLib";
 import QRCode from 'qrcode.react';
-
+import "./css/Home.css";
 
 export default function Profile() {
   const [userCode, setUserCode] = useState('');

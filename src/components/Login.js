@@ -6,7 +6,7 @@ import LoaderButton from "../components/LoaderButton";
 import { useAppContext } from "../libs/contextLib";
 import { useFormFields } from "../libs/hooksLib";
 import { onError } from "../libs/errorLib";
-import "./Login.css";
+import "./css/Login.css";
 
 export default function Login() {
   const history = useHistory();
@@ -33,8 +33,6 @@ export default function Login() {
 
     setIsLoading(true);
 
-    console.log('CODE:', fields.confirmationCode);
-
     try {
       const user = await Auth.signIn(fields.email, fields.password);
       setUser(user);
@@ -55,6 +53,9 @@ export default function Login() {
     event.preventDefault();
 
     setIsLoading(true);
+
+    console.log('CODE:', fields.confirmationCode);
+    console.log(user);
 
     try {
       // You need to get the code from the UI inputs
@@ -126,7 +127,7 @@ export default function Login() {
               size="lg"
               type="submit"
               variant="success"
-              isLoading={isLoading}
+              isLoading={false}
               disabled={!validateConfirmationForm()}
             >
               Verify
