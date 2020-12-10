@@ -12,6 +12,7 @@ export default function Login() {
   const history = useHistory();
   const { userHasAuthenticated } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [fields, handleFieldChange] = useFormFields({
     email: "",
@@ -36,21 +37,36 @@ export default function Login() {
 
     try {
       const user = await Auth.signIn(fields.email, fields.password);
+      setUser(user);
+      console.log(user);
       if (user.challengeName === 'SMS_MFA' || user.challengeName === 'SOFTWARE_TOKEN_MFA') {
         setShowConfirmation(true);
-        // You need to get the code from the UI inputs
-        // and then trigger the following function with a button click
-        const code = fields.confirmationCode;
-        // If MFA is enabled, sign-in should be confirmed with the confirmation code
-        await Auth.confirmSignIn(
-            user,   // Return object from Auth.signIn()
-            code,   // Confirmation code  
-            'SOFTWARE_TOKEN_MFA' // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA
-        );
-        userHasAuthenticated(true);
       } else {
-        userHasAuthenticated(true);
+        userHasAuthenticated(true); 
+        history.push("/profile");
       }
+    } catch (e) {
+      onError(e);
+      setIsLoading(false);
+    }
+  }
+
+  async function handleConfirmationSubmit(event) {
+    event.preventDefault();
+
+    setIsLoading(true);
+
+    try {
+      // You need to get the code from the UI inputs
+      // and then trigger the following function with a button click
+      const code = fields.confirmationCode;
+      // If MFA is enabled, sign-in should be confirmed with the confirmation code
+      await Auth.confirmSignIn(
+          user,   // Return object from Auth.signIn()
+          code,   // Confirmation code  
+          'SOFTWARE_TOKEN_MFA' // MFA Type e.g. SMS_MFA, SOFTWARE_TOKEN_MFA
+      );
+      userHasAuthenticated(true);
       history.push("/profile");
     } catch (e) {
       onError(e);
@@ -94,7 +110,7 @@ export default function Login() {
         }
         {
           showConfirmation && (
-          <Form onSubmit={handleSubmit}>
+          <Form onSubmit={handleConfirmationSubmit}>
             <Form.Group controlId="confirmationCode" size="lg">
               <Form.Label>Confirmation TOTP Code</Form.Label>
               <Form.Control
